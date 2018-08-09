@@ -1,0 +1,52 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+    - name: Instalar Herramientas
+      apt: name={{ item }} state=present update_cache=true
+      with_items:
+        - git
+        - curl
+        - unzip
+        - lvm2
+        - gnome
+        - gparted
+        - build-essential
+        - module-assistant
+    - name: Crear Directorio JVM
+      file:
+        path: /usr/lib/jvm
+        state: directory
+    - name: Desempaquetar Java
+      unarchive:
+        src: /vagrant/jdk-8u181-linux-x64.tar.gz
+        dest: /usr/lib/jvm
+        remote_src: yes
+    - name: Activar java
+      command: update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/jdk1.8.0_181/bin/java" 1
+      become: true
+    - name: Seleccionar java
+      command: update-alternatives --set java /usr/lib/jvm/jdk1.8.0_181/bin/java
+    - name: Agregar usuario dev
+      user:
+        name: dev
+        password: $6$cbcA3.Jy0/zEZ/iR$hoJ1oZhmMDMSgzHlHAWA3Awe2.OElqtVGgqKINC3h3fqxHnmleyg19U8eNUKiHfMEROMVulStpPpQkNfnQuvh/
+        shell: /bin/bash
+        createhome: yes
+        append: yes
+        system: yes
+        state: present
+    - name: Crear Directorio Anypoint
+      file:
+        path: /anypoint
+        state: directory
+        owner: dev
+        group: dev
+    - name: Desempaquetar Anypoint
+      unarchive:
+        src: /vagrant/AnypointStudio-for-linux-64bit-7.1.4-201807100112.tar.gz
+        dest: /anypoint/
+        owner: dev
+        group: dev
+        remote_src: yes

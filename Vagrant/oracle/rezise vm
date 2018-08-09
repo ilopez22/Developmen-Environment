@@ -1,0 +1,12 @@
+VBoxManage showvminfo JDeveloper | grep ".vmdk"
+VBoxManage clonehd "jessie.vmdk" "tmp-disk.vdi" --format vdi
+VBoxManage showhdinfo "tmp-disk.vdi"
+VBoxManage modifyhd "tmp1-disk.vdi" --resize 25600
+VBoxManage showvminfo JDeveloper | grep "Storage"
+VBoxManage storageattach JDeveloper --storagectl "SATA Controller" --port 0 --device 0 --type hdd --medium tmp1-disk.vdi
+vagrant ssh
+df 
+sudo lvextend -L+15G /dev/mapper/vol_grp1-lv_root
+sudo  mkfs.ext3 /dev/mapper/vol_grp1-lv_root
+sudo lvcreate -l 15 -n lv_root vol_grp1
+lvextend -l +100%FREE /dev/mapper/vol_grp1-lv_root

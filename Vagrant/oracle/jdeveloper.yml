@@ -1,0 +1,54 @@
+---
+
+- hosts: all
+  become: true
+  tasks:
+    - name: Instalar Herramientas
+      apt: name={{ item }} state=present update_cache=true
+      with_items:
+        - git
+        - curl
+        - unzip
+        - lvm2
+        - gnome
+        - gparted
+    - name: Crear Directorio JVM
+      file:
+        path: /usr/lib/jvm
+        state: directory
+    - name: Desempaquetar Java
+      unarchive:
+        src: /vagrant/jdk-7u80-linux-x64.tar.gz
+        dest: /usr/lib/jvm
+        remote_src: yes
+    - name: Activar java
+      command: update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jvm/jdk1.7.0_80/bin/java" 1
+      become: true
+    - name: Seleccionar java
+      command: update-alternatives --set java /usr/lib/jvm/jdk1.7.0_80/bin/java
+    - name: Agregar usuario oracle
+      user:
+        name: oracle
+        password: $6$cbcA3.Jy0/zEZ/iR$hoJ1oZhmMDMSgzHlHAWA3Awe2.OElqtVGgqKINC3h3fqxHnmleyg19U8eNUKiHfMEROMVulStpPpQkNfnQuvh/
+        shell: /bin/bash
+        createhome: yes
+        append: yes
+        system: yes
+        state: present
+    - name: Crear Directorio OSB
+      file:
+        path: /u01
+        state: directory
+        owner: oracle
+        group: oracle
+    - name: Desempaquetar SOA 12c
+      unarchive:
+        src: /vagrant/fmw_12.1.3.0.0_soaqs_Disk1_1of1.zip
+        dest: /u01/
+        owner: oracle
+        group: oracle
+        remote_src: yes
+    - name: Ejecutar SOA jar
+      command: java -jar /u01/fmw_12.1.3.0.0_soa_quickstart.jar -ignoreSysPrereqs -novalidation -silent -responseFile /vagrant/custom_installtype_soa12.1.3.rsp
+      become: true
+      become_user: oracle
