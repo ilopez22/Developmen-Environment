@@ -9,8 +9,6 @@
         - git
         - curl
         - unzip
-        - lvm2
-        - gnome
         - gparted
         - build-essential
         - module-assistant
